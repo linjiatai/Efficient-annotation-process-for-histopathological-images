@@ -112,7 +112,7 @@ class WSI_seg(object):
         orig_img = np.asarray(orig_img)
         img_array = np.array(orig_img).astype(np.uint8)
         gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
-        ret, binary = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)
+        ret, binary = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
         binary = np.uint8(binary)    
         dst = morphology.remove_small_objects(binary!=255,min_size=10000,connectivity=1)
         dst = morphology.remove_small_objects(dst==False,min_size=10000,connectivity=1)
@@ -208,7 +208,7 @@ class WSI_seg(object):
     def seg_WSI(self, WSI_dir):
         slide = openslide.open_slide(WSI_dir)
         H_40x,W_40x = slide.dimensions
-        H_20x,W_20x = int(H_40x/2),int(W_40x)
+        H_20x,W_20x = int(H_40x/2),int(W_40x/2)
         step_x_20x = int(H_20x/5)+1
         step_y_20x = int(W_20x/5)+1
         mask = Image.new('P', (int(H_20x), int(W_20x)))
