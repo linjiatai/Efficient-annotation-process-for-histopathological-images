@@ -12,6 +12,45 @@ from PIL import Image
 import time
 from network.deeplab import *
 from tool import custom_transforms as tr
+from torch.utils.data import DataLoader, Dataset
+class img_Dataset(Dataset):
+    def __init__(self, WSI, overlap, bg, transform_val):
+        self.slide = WSI
+        self.bg = bg
+        self.overlap = overlap
+        self.xs, self.ys = self.__coordinate_generation__(WSI)
+        self.transform_val = transform_val
+        
+    def transform_BLS(self, sample,size):
+        composed_transforms = transforms.Compose([transforms.Resize((size,size)),Normalize(),ToTensor()])
+        return composed_transforms(sample)
+
+    def __getitem__(self, index):
+        x = self.xs[index]
+        y = self.ys[index]
+        patch_cv2 = self.slide.crop((x,y,x+224,y+224))
+        patch = self.transform_val(patch_cv2) # tensor
+        return patch, x, y 
+    def __coordinate_generation__(self,WSI):
+        xs = []
+        ys = []
+        H = WSI.size[0]
+        W = WSI.size[1]
+        for x in range(0, H, 224-self.overlap):
+            if x+224 > H:
+                x = H-224
+            for y in range(0, W, 224-self.overlap):
+                if y+224 > W:
+                    y = W-224
+                bg_tmp = np.array(self.bg.crop([x,y,x+224,y+224]))
+                if np.sum(bg_tmp) > 224*224*0.8:
+                    continue
+                xs.append(x)
+                ys.append(y)
+        return xs,ys
+
+    def __len__(self):
+        return len(self.xs)
 
 class Normalize(object):
     """Normalize a tensor image with mean and standard deviation.
@@ -73,12 +112,13 @@ class WSI_seg(object):
         orig_img = np.asarray(orig_img)
         img_array = np.array(orig_img).astype(np.uint8)
         gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
-        ret, binary = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
+        ret, binary = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)
         binary = np.uint8(binary)    
         dst = morphology.remove_small_objects(binary!=255,min_size=10000,connectivity=1)
         dst = morphology.remove_small_objects(dst==False,min_size=10000,connectivity=1)
-        bg_mask = np.ones(orig_img.shape[:2]) * -10000
-        bg_mask[dst==True]=10000
+        bg_mask = np.zeros(orig_img.shape[:2])
+        bg_mask[dst==True]=1
+        bg_mask = Image.fromarray(np.uint8(bg_mask), 'P')
         return bg_mask
 
     def transform_val(self, sample):
@@ -120,6 +160,32 @@ class WSI_seg(object):
         mask = mask.unsqueeze(0)
         G = torch.cat((mask,G), 0).numpy()
         return G
+    def gain_network_output_use_dataloader(self,WSI):
+        H = WSI.size[1]
+        W = WSI.size[0]
+        G = np.zeros((6, H, W))
+        D = np.zeros((6, H, W))
+        bg = self.gen_bg_mask(WSI)
+        dataset = img_Dataset(WSI,self.args.overlap, bg, self.transform_val)
+        data_loader = DataLoader(dataset,batch_size=60,shuffle=False,num_workers=8,pin_memory=False,drop_last=False)
+        for iter, (patch, xs, ys) in (enumerate(data_loader)):
+            with torch.no_grad():
+                patch = patch.cuda()
+                output = self.model(patch)
+            for i in range(len(xs)):
+                x = xs[i]
+                y = ys[i]
+                pred = output[i]
+                G[:, y:y+224, x:x+224] += pred.detach().cpu().numpy()
+                D[:, y:y+224, x:x+224] += 1
+        D[D==0] = 1
+        G /=D
+        G = torch.from_numpy(G)
+        bg = np.array(bg)*100
+        bg = torch.from_numpy(bg)
+        bg = bg.unsqueeze(0)
+        G = torch.cat((bg,G), 0).numpy()
+        return G
 
     def fuse_mask_and_img(self, mask, img):
         mask = cv2.cvtColor(np.asarray(mask), cv2.COLOR_BGR2RGB)
@@ -141,25 +207,25 @@ class WSI_seg(object):
     
     def seg_WSI(self, WSI_dir):
         slide = openslide.open_slide(WSI_dir)
-
         H_40x,W_40x = slide.dimensions
-        step_x_40x = int(H_40x/5)+1
-        step_y_40x = int(W_40x/5)+1
-        mask = Image.new('P', (int(H_40x/2), int(W_40x/2)))
+        H_20x,W_20x = int(H_40x/2),int(W_40x)
+        step_x_20x = int(H_20x/5)+1
+        step_y_20x = int(W_20x/5)+1
+        mask = Image.new('P', (int(H_20x), int(W_20x)))
         # img_20x = Image.new('RGB', (int(H_40x/2), int(W_40x/2)))
-        for x_40x in range(0,H_40x,step_x_40x):
-            if x_40x+step_x_40x>H_40x:
-                x_40x = H_40x - step_x_40x
-            for y_40x in range(0,W_40x,step_y_40x):
-                if y_40x+step_y_40x>W_40x:
-                    y_40x = W_40x - step_y_40x
-                img = slide.read_region((x_40x,y_40x), 0, (step_x_40x, step_y_40x)).convert('RGB')
-                img = img.resize((int(step_x_40x/2), int(step_y_40x/2)))
-                pred = self.gain_network_output(img)
+        for x_20x in range(0,H_20x,step_x_20x):
+            if x_20x+step_x_20x>H_20x:
+                x_20x = H_20x - step_x_20x
+            for y_20x in range(0,W_20x,step_y_20x):
+                if y_20x+step_y_20x>W_20x:
+                    y_20x = W_20x - step_y_20x
+                img = slide.read_region((x_20x*2,y_20x*2), 0, (step_x_20x*2, step_y_20x*2)).convert('RGB')
+                img = img.resize((int(step_x_20x), int(step_y_20x)))
+                pred = self.gain_network_output_use_dataloader(img)
                 pred = np.argmax(pred,0)
                 visualimg = Image.fromarray(pred.astype(np.uint8), "P")
-                x_20x, y_20x = int(x_40x/2), int(y_40x/2)
-                step_x_20x, step_y_20x = int(step_x_40x/2), int(step_y_40x/2)
+                # x_20x, y_20x = int(x_40x/2), int(y_40x/2)
+                # step_x_20x, step_y_20x = int(step_x_40x/2), int(step_y_40x/2)
                 mask.paste(visualimg,(x_20x,y_20x, x_20x+step_x_20x, y_20x+step_y_20x))
                 # img_20x.paste(img,(x_20x,y_20x, x_20x+step_x_20x, y_20x+step_y_20x))
         mask.putpalette(self.palette)
@@ -181,7 +247,7 @@ def main():
     # finetuning pre-trained models
     parser.add_argument('--ft', action='store_true', default=False,
                         help='finetuning on a different dataset')
-    parser.add_argument('--overlap', type=int, default=130, help='overlap')
+    parser.add_argument('--overlap', type=int, default=120, help='overlap')
     parser.add_argument('--save_dir', type=str, default='stage2_result_v4/', help='save path')
     args = parser.parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -212,7 +278,3 @@ def main():
             # img_20x.save(os.path.join('/media/linjiatai/linjiatai-16TB/兵兵/Multi-step/SAVE/Original_dataset/seg_img/', file[:-4]+'.jpg'))
 if __name__ == "__main__":
    main()
-
-
-
-
