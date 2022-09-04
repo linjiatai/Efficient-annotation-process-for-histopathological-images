@@ -23,7 +23,9 @@ Meanwhile, the palette should be modified in each code in this program.
 ## Requirement
 - GIMAP program (Ubuntu) / Photoshop (Windows)
 - GPU
-- openslide
 
 ## Usage
 
+In this program, we show each step in Ubuntu 20.04.
+
+- At first step, we can generate some simplest annotation by drawing polygons.
