@@ -6,7 +6,7 @@ This program is a high-efficiency annotation process. The junior pathologist can
 ## Preparation
 
 - You should download the pre-trained weight from XXX and put it in fold XXX.
-- And you should put your region of interests (ROIs) in the fold XXX.
+- And you should prepare your region of interests (ROIs) and put them in the fold XXX.
 
 
 ## Usage
