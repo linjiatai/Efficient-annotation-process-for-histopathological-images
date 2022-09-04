@@ -1,10 +1,14 @@
 import os
 from PIL import Image
 
-dataroot = '../SAVE/representative_region_20x/'
+dataroot = 'ROIs/'
 
 files = os.listdir(dataroot)
-tag = 'v4'
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--version', type=str, default='v1')
+args = parser.parse_args()
+tag = args.version
 
 for file in sorted(files):
     img = Image.open(dataroot+file).convert('RGB')
