@@ -2,9 +2,13 @@ import os
 import shutil
 from tool.concave_hull import concave_hull
 
-mask_dir = '/home/linjiatai/14TB/兵兵/Multi-step/SAVE/Original_dataset/seg_mask/'
-bulk_dir = '/home/linjiatai/14TB/兵兵/Multi-step/SAVE/Original_dataset/bulks/'
-bad_dir = '/home/linjiatai/14TB/兵兵/Multi-step/SAVE/Original_dataset/bad_case/'
+mask_dir = 'WSI/mask/'
+bulk_dir = 'WSI/bulks/'
+nobulk_dir = 'WSI/no_bulks/'
+if not os.path.exists(nobulk_dir):
+    os.mkdir(nobulk_dir)
+if not os.path.exists(bulk_dir):
+    os.mkdir(bulk_dir)
 for root, _, files in os.walk(mask_dir):
     for file in sorted(files):
         print(file)
@@ -15,7 +19,7 @@ for root, _, files in os.walk(mask_dir):
         palette[0:3] = [0,0,0]
         palette[3:6] = [255,255,255]
         if bulk == None:
-            shutil.move(os.path.join(mask_dir, file),os.path.join(bad_dir, file) )
+            shutil.move(os.path.join(mask_dir, file),os.path.join(nobulk_dir, file) )
             continue
         bulk.putpalette(palette)
         bulk.save(os.path.join(bulk_dir, file))
