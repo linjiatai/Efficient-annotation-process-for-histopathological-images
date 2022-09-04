@@ -20,5 +20,10 @@ palette[18:21] = [237,145,33] # 6-Muscle
 ```
 Meanwhile, the palette should be modified in each code in this program.
 
+## Requirement
+- GIMAP program (Ubuntu) / Photoshop (Windows)
+- GPU
+- openslide
+
 ## Usage
 
