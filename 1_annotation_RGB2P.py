@@ -1,22 +1,21 @@
 import os
+from turtle import ontimer
 import numpy as np
 from PIL import Image
+import argparse
+from palette import palette
+parser = argparse.ArgumentParser()
+parser.add_argument('--version', type=str, default='v1')
+args = parser.parse_args()
 
-labeldir = 'label_v4_RGB/'
-label_RGB_dir = 'label_v4_P/'
+labeldir = 'label_'+str(args.version)+'_RGB/'
+label_RGB_dir = 'label_'+str(args.version)+'_P/'
+if not os.path.exists(label_RGB_dir):
+    os.mkdir(label_RGB_dir)
 annotations = os.listdir(labeldir)
-palette = [0]*100
-palette[0:3] = [255,255,255]
-palette[3:6] = [120,120,120]
-palette[6:9] = [255,0,0]
-palette[9:12] = [0,255,0]
-palette[12:15] = [0,255,255]
-palette[15:18] = [255,0,255]
-palette[18:21] = [237,145,33]
-
-
-
 for annotation in sorted(annotations):
+    if annotation[-3:] != 'png':
+        continue
     mask = np.array(Image.open(labeldir+annotation).convert('RGB'))
     mask_P = np.zeros((mask.shape[0],mask.shape[1]))
 
