@@ -7,7 +7,7 @@ This program is a high-efficiency annotation process. The junior pathologist can
 
 - You should download the pre-trained weight from XXX and put it in fold XXX.
 - And you should prepare your region of interests (ROIs) and put them in the fold XXX.
-- Third, you should confirme the tissue types of your data and modify the palette in this program, such as:
+- Third, you should confirme the number of tissue types in your dataset and modify the palette in this program, such as:
 ```
 palette = [0]*100             # Palette for CRC dataset
 palette[0:3] = [255,255,255]  # 0-Background
