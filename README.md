@@ -1,4 +1,7 @@
 # WSI-loop
 
 ## Introduction
-This program is an efficient annotation process for the pathologist. 
+This program is an efficient annotation process for the pathologist. The junior pathologist can self-accumulate a large number of pixel-level annotations by this process and shubmit them to the senior pathologist for modification and confirmation as ground-truth.
+
+## Usage
+
