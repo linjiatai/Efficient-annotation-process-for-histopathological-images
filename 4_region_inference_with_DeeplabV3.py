@@ -12,7 +12,7 @@ from PIL import Image
 import time
 from network.deeplab import *
 from tool import custom_transforms as tr
-
+from palette import palette
 class Normalize(object):
     """Normalize a tensor image with mean and standard deviation.
     Args:
@@ -48,14 +48,6 @@ class WSI_seg(object):
     def __init__(self, args):
         self.args = args
         self.nclass = 6
-        palette = [0]*100
-        palette[0:3] = [255,255,255]    # 白色 背景
-        palette[3:6] = [120,120,120]    # 灰色 正常
-        palette[6:9] = [255,0,0]        # 红色 肿瘤
-        palette[9:12] = [0,255,0]       # 绿色 间质
-        palette[12:15] = [0,255,255]    # 青色 粘液
-        palette[15:18] = [255,0,255]    # 紫色 坏死
-        palette[18:21] = [237,145,33]   # 土黄 肌肉
         self.palette = palette
 
         model = DeepLab(num_classes=6,
@@ -63,7 +55,7 @@ class WSI_seg(object):
                         output_stride=16,
                         sync_bn=False,
                         freeze_bn=False)
-        checkpoint = torch.load('checkpoints/checkpoint_stage2_v4_ep_29.pth')
+        checkpoint = torch.load(args.checkpoint)
         model.load_state_dict(checkpoint)
         # Using cuda
         self.model = model.cuda()
@@ -154,9 +146,17 @@ def main():
     # finetuning pre-trained models
     parser.add_argument('--ft', action='store_true', default=False,
                         help='finetuning on a different dataset')
-    parser.add_argument('--overlap', type=int, default=130, help='overlap')
-    parser.add_argument('--save_dir', type=str, default='stage2_result_v4/', help='save path')
+    parser.add_argument('--overlap', type=int, default=120, help='overlap')
+    parser.add_argument('--version', type=str, default='v1')
     args = parser.parse_args()
+    args.save_dir = 'stage2_result_'+args.version+'/'
+    if not os.path.exists(args.save_dir):
+        os.mkdir(args.save_dir)
+    if not os.path.exists(args.save_dir+'seg/'):
+        os.mkdir(args.save_dir+'seg/')
+    if not os.path.exists(args.save_dir+'mask/'):
+        os.mkdir(args.save_dir+'mask/')
+    args.checkpoint = 'checkpoints/checkpoint_stage2_'+args.version+'.pth'
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     if args.cuda:
         try:
@@ -167,7 +167,7 @@ def main():
     torch.manual_seed(args.seed)
     WSI_seger = WSI_seg(args)
     begin_time = time.time()
-    dataroot = '../SAVE/representative_region_20x/'
+    dataroot = 'ROIs/'
     for root,_,files in os.walk(dataroot):
         files = sorted(files)
         for file in files:
@@ -183,7 +183,7 @@ def main():
             print ('time consumption:',run_time)
             mask_on_img.save(os.path.join(args.save_dir+'seg/', file))
             mask.save(os.path.join(args.save_dir+'mask/', file))
-
+    os.mkdir('label_v'+str(int(args.version[1])+1)+'_RGB')
 if __name__ == "__main__":
    main()     
 
