@@ -13,6 +13,7 @@ import time
 from network.deeplab import *
 from tool import custom_transforms as tr
 from torch.utils.data import DataLoader, Dataset
+from palette import palette
 class img_Dataset(Dataset):
     def __init__(self, WSI, overlap, bg, transform_val):
         self.slide = WSI
@@ -87,14 +88,6 @@ class WSI_seg(object):
     def __init__(self, args):
         self.args = args
         self.nclass = 6
-        palette = [0]*100
-        palette[0:3] = [255,255,255]    # 白色 背景
-        palette[3:6] = [120,120,120]    # 灰色 正常
-        palette[6:9] = [255,0,0]        # 红色 肿瘤
-        palette[9:12] = [0,255,0]       # 绿色 间质
-        palette[12:15] = [0,255,255]    # 青色 粘液
-        palette[15:18] = [255,0,255]    # 紫色 坏死
-        palette[18:21] = [237,145,33]   # 土黄 肌肉
         self.palette = palette
 
         model = DeepLab(num_classes=6,
@@ -102,7 +95,7 @@ class WSI_seg(object):
                         output_stride=16,
                         sync_bn=False,
                         freeze_bn=False)
-        checkpoint = torch.load('/media/linjiatai/linjiatai-16TB/兵兵/Multi-step/2_stage_DeeplabV3/checkpoints/checkpoint_stage2_v4_ep_29.pth')
+        checkpoint = torch.load(args.checkpoint)
         model.load_state_dict(checkpoint)
         # Using cuda
         self.model = model.cuda()
@@ -212,7 +205,6 @@ class WSI_seg(object):
         step_x_20x = int(H_20x/5)+1
         step_y_20x = int(W_20x/5)+1
         mask = Image.new('P', (int(H_20x), int(W_20x)))
-        # img_20x = Image.new('RGB', (int(H_40x/2), int(W_40x/2)))
         for x_20x in range(0,H_20x,step_x_20x):
             if x_20x+step_x_20x>H_20x:
                 x_20x = H_20x - step_x_20x
@@ -224,10 +216,7 @@ class WSI_seg(object):
                 pred = self.gain_network_output_use_dataloader(img)
                 pred = np.argmax(pred,0)
                 visualimg = Image.fromarray(pred.astype(np.uint8), "P")
-                # x_20x, y_20x = int(x_40x/2), int(y_40x/2)
-                # step_x_20x, step_y_20x = int(step_x_40x/2), int(step_y_40x/2)
                 mask.paste(visualimg,(x_20x,y_20x, x_20x+step_x_20x, y_20x+step_y_20x))
-                # img_20x.paste(img,(x_20x,y_20x, x_20x+step_x_20x, y_20x+step_y_20x))
         mask.putpalette(self.palette)
         img_20x = None
         return mask, img_20x
@@ -247,8 +236,8 @@ def main():
     # finetuning pre-trained models
     parser.add_argument('--ft', action='store_true', default=False,
                         help='finetuning on a different dataset')
+    parser.add_argument('--version', type=str, default='v1')
     parser.add_argument('--overlap', type=int, default=120, help='overlap')
-    parser.add_argument('--save_dir', type=str, default='stage2_result_v4/', help='save path')
     args = parser.parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     if args.cuda:
@@ -260,21 +249,21 @@ def main():
     torch.manual_seed(args.seed)
     WSI_seger = WSI_seg(args)
     begin_time = time.time()
-    dataroot = '/media/linjiatai/linjiatai-16TB/兵兵/Multi-step/SAVE/Original_dataset/WSIs/'
+    dataroot = './WSIs/wsi/'
+    args.checkpoint = 'checkpoints/checkpoint_stage2_'+args.version+'.pth'
     for root,_,files in os.walk(dataroot):
         files = sorted(files)
         for file in files:
             print(file)
             if not (file.split('.')[-1] == 'svs'):
                 continue
-            if os.path.exists(os.path.join('/media/linjiatai/linjiatai-16TB/兵兵/Multi-step/SAVE/Original_dataset/seg_mask/', file[:-4]+'.png')):
+            if os.path.exists(os.path.join('WSI/mask/', file[:-4]+'.png')):
                 continue
             WSI_dir = os.path.join(root,file)
             mask, img_20x = WSI_seger.seg_WSI(WSI_dir)
             end_time = time.time()
             run_time = end_time-begin_time
             print ('time consumption:',run_time)
-            mask.save(os.path.join('/media/linjiatai/linjiatai-16TB/兵兵/Multi-step/SAVE/Original_dataset/seg_mask/', file[:-4]+'.png'))
-            # img_20x.save(os.path.join('/media/linjiatai/linjiatai-16TB/兵兵/Multi-step/SAVE/Original_dataset/seg_img/', file[:-4]+'.jpg'))
+            mask.save(os.path.join('WSI/mask/', file[:-4]+'.png'))
 if __name__ == "__main__":
    main()
