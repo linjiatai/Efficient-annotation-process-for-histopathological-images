@@ -30,6 +30,8 @@ In this program, we show ehow to use this program on Ubuntu 20.04.
 
 - At first step, we can generate some simplest annotation by drawing polygons or rectangular and fill the corresponding area with the corresponding color, such as:
 
+![outline](figures/11.png)![outline](figures/22.png)![outline](figures/33.png)
+
 - Then we executed the script file by:
 ```
 bash ./0_auto-loop.sh
