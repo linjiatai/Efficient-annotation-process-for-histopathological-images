@@ -11,7 +11,7 @@ from tool.lr_scheduler import LR_Scheduler
 from tool.saver import Saver
 from tool.summaries import TensorboardSummary
 from tool.metrics import Evaluator
-
+from palette import palette
 class Trainer(object):
     def __init__(self, args):
         self.args = args
@@ -64,6 +64,7 @@ class Trainer(object):
         self.model.train()
         tbar = tqdm(self.train_loader)
         num_img_tr = len(self.train_loader)
+        loss_record = 100
         for i, sample in enumerate(tbar):
             image, target = sample['image'], sample['label']
             if self.args.cuda:
@@ -75,6 +76,9 @@ class Trainer(object):
             output = torch.cat([(100 * one * (target==0).unsqueeze(dim = 1)), output],dim = 1)
             loss_o = self.criterion(output, target)
             loss = loss_o
+            if loss < loss_record:
+                loss_record = loss.data.cpu()
+                self.saver.save_checkpoint(state=self.model.module.state_dict(), filename='checkpoint_stage2_'+self.args.version+'.pth')
             loss.backward()
             self.optimizer.step()
             train_loss += loss.item()
@@ -90,7 +94,8 @@ def main():
     parser = argparse.ArgumentParser(description="WSSS Stage2")
     parser.add_argument('--backbone', type=str, default='resnet', choices=['resnet', 'xception', 'drn', 'mobilenet'])
     parser.add_argument('--out-stride', type=int, default=16)
-    parser.add_argument('--dataroot', type=str, default='dataset_stage2_v4/')
+    parser.add_argument('--version', type=str, default='v1')
+    
     parser.add_argument('--savepath', type=str, default='checkpoints/')
     parser.add_argument('--workers', type=int, default=10, metavar='N')
     parser.add_argument('--sync-bn', type=bool, default=None)
@@ -99,7 +104,7 @@ def main():
     parser.add_argument('--n_class', type=int, default=6)
     # training hyper params
     parser.add_argument('--epochs', type=int, default=30, metavar='N')
-    parser.add_argument('--batch-size', type=int, default=20, metavar='N')
+    parser.add_argument('--batch-size', type=int, default=5, metavar='N')
     # optimizer params
     parser.add_argument('--lr', type=float, default=0.01, metavar='LR')
     parser.add_argument('--lr-scheduler', type=str, default='poly',choices=['poly', 'step', 'cos'])
@@ -111,12 +116,18 @@ def main():
     parser.add_argument('--gpu-ids', type=str, default='0')
     parser.add_argument('--seed', type=int, default=1, metavar='S')
     # checking point
-    # parser.add_argument('--resume', type=str, default='init_weights/deeplab-resnet.pth.tar')
-    parser.add_argument('--resume', type=str, default='checkpoints/checkpoint_stage2_v3_ep_59.pth')
     parser.add_argument('--checkname', type=str, default='deeplab-resnet')
-    parser.add_argument('--ft', action='store_true', default=True)
     parser.add_argument('--eval-interval', type=int, default=1)
     args = parser.parse_args()
+    args.dataroot = 'dataset_stage2_'+args.version
+    if not os.path.exists('checkpoints'):
+        os.mkdir('checkpoints')
+    if args.version == 'v1':
+        args.resume = 'init_weights/deeplab-resnet.pth.tar'
+        args.ft = False
+    else:
+        args.resume = 'checkpoints/checkpoint_stage2_v'+str(int(args.version[1])-1)+'.pth'
+        args.ft = True
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     if args.cuda:
         try:
@@ -133,7 +144,7 @@ def main():
     trainer = Trainer(args)
     for epoch in range(trainer.args.epochs):
         trainer.training(epoch)
-        trainer.saver.save_checkpoint(state=trainer.model.module.state_dict(), filename='checkpoint_stage2_v4_ep_'+str(epoch)+'.pth')
+    
     trainer.writer.close()
 
 if __name__ == "__main__":
