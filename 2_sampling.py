@@ -1,14 +1,29 @@
 import os
+import shutil
 from matplotlib.pyplot import annotate
 import numpy as np
 from PIL import Image
+from palette import palette
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--version', type=str, default='v1')
+args = parser.parse_args()
 
-annotations_dir = 'label_v4_P/'
-regions = '../SAVE/representative_region_20x/'
+annotations_dir = 'label_'+str(args.version)+'_P/'
+regions = 'ROIs/'
 
 files = os.listdir(annotations_dir)
 step = 120
+if not os.path.exists('dataset_stage2_v'+str(int(args.version[1])-1)+'/'):
+    os.mkdir('dataset_stage2_'+str(args.version)+'/')
+    os.mkdir('dataset_stage2_'+str(args.version)+'/img/')
+    os.mkdir('dataset_stage2_'+str(args.version)+'/mask/')
+else:
+    shutil.copytree(src='dataset_stage2_v'+str(int(args.version[1])-1)+'/', dst='dataset_stage2_'+args.version+'/')
+
 for file in sorted(files):
+    if file[-3:] != 'png':
+        continue
     mask = Image.open(annotations_dir+file)
     img = Image.open(regions+file)
     H,W = mask.size
@@ -39,6 +54,6 @@ for file in sorted(files):
             for i in range(len(tag)):
                 label[tag[i]-1] = 1
             label = np.uint8(label)
-            subimg.save('dataset_stage2_v4/img/'+file[:-4]+'_'+str(x)+'_'+str(y)+'_'+str(label)+'.png')
-            submask.save('dataset_stage2_v4/mask/'+file[:-4]+'_'+str(x)+'_'+str(y)+'_'+str(label)+'.png')
+            subimg.save('dataset_stage2_'+args.version+'/img/'+file[:-4]+'_'+str(x)+'_'+str(y)+'_'+str(label)+'.png')
+            submask.save('dataset_stage2_'+args.version+'/mask/'+file[:-4]+'_'+str(x)+'_'+str(y)+'_'+str(label)+'.png')
             
