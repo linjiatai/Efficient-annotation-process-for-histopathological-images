@@ -186,7 +186,3 @@ def main():
     os.mkdir('label_v'+str(int(args.version[1])+1)+'_RGB')
 if __name__ == "__main__":
    main()     
-
-
-
-
