@@ -50,7 +50,8 @@ We also provide some tools to segment WSI or generate tumor bulks.
 
 ## Statement
 The process for efficient labeling are still being iterated. Please contact us if you have any suggestions.
-
-Jiatai Lin
-linjiatai_cs@163.com
-SCUT(South China University of Technology)
+```
+Name:         Jiatai Lin
+Email:        linjiatai_cs@163.com
+Institution:  SCUT(South China University of Technology)
+```
