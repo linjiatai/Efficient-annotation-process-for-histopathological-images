@@ -26,7 +26,9 @@ palette[18:21] = [237,145,33] # 6-Muscle
 
 ## Usage
 
-In this program, we show ehow to use this program on Ubuntu 20.04.
+### Annotation Loop
+
+You can accumulate your annotation with our program by executing the following step:
 
 - Step 1: Generate simplest single-category annotation of each area by drawing polygons or rectangular with the corresponding color of palette.
 
