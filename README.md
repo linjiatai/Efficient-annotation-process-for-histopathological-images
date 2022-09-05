@@ -27,12 +27,13 @@ palette[18:21] = [237,145,33] # 6-Muscle
 
 In this program, we show ehow to use this program on Ubuntu 20.04.
 
-- At first step, we can generate some simplest annotation by drawing polygons or rectangular and fill the corresponding area with the corresponding color, such as:
+- Step 1: Generate simplest single-category annotation by drawing polygons or rectangular with the corresponding color of palette, such as:
 
 ![Figure1](figures/11.png)![Figure2](figures/22.png)![Figure3](figures/33.png)
 
-- Then we executed the script file by:
+- Step 2: Execute the script file by:
 ```
 bash ./0_auto-loop.sh
 ```
 
+- Step 3: 
