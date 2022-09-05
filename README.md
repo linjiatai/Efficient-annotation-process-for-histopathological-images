@@ -21,7 +21,7 @@ palette[18:21] = [237,145,33] # 6-Muscle
 
 ## Requirement
 - GIMAP program (Ubuntu) / Photoshop (Windows)
-- Pathological tissue discrimination (personal ability)
+- Pathological tissue discrimination ability (personal)
 - GPU
 
 ## Usage
