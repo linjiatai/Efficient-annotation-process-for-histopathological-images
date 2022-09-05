@@ -44,5 +44,9 @@ You need to manually modify the version **v1/v2/v3/...** in **0_auto-loop.sh** f
 - Step 4: Save the new annotation to the annotation folder of the next version such as **label_v2_RGB/**. (All intermediate folders are automatically generated)
 - Repeat steps 2-4: Easily add more and more samples until the target is segmented to a satisfactory effect.
 
+### Other tools
+
+We also provide some codes to segment WSI or generate tumor bulks.
+
 ## 
 Any suggestions on efficient labeling are welcome.
