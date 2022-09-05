@@ -103,8 +103,8 @@ def main():
     parser.add_argument('--loss-type', type=str, default='ce', choices=['ce', 'focal'])
     parser.add_argument('--n_class', type=int, default=6)
     # training hyper params
-    parser.add_argument('--epochs', type=int, default=30, metavar='N')
-    parser.add_argument('--batch-size', type=int, default=5, metavar='N')
+    parser.add_argument('--epochs', type=int, default=20, metavar='N')
+    parser.add_argument('--batch-size', type=int, default=20, metavar='N')
     # optimizer params
     parser.add_argument('--lr', type=float, default=0.01, metavar='LR')
     parser.add_argument('--lr-scheduler', type=str, default='poly',choices=['poly', 'step', 'cos'])
