@@ -122,6 +122,6 @@ class Stage2_Dataset_full_supervised(Dataset):
 
 def make_data_loader(args, **kwargs):
     train_set   = Stage2_Dataset_full_supervised(args, base_dir=args.dataroot, split='train')
-    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, **kwargs)
+    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, drop_last=True, **kwargs)
 
     return train_loader
