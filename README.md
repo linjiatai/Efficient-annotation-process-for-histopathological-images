@@ -42,4 +42,4 @@ You need to manually modify the version **v1/v2/v3/...** in **0_auto-loop.sh** f
 - Repeat steps 2-4: Easily add more and more samples until the target is segmented to a satisfactory effect.
 
 ## 
-Any good suggestions are welcome
+Any suggestions on efficient labeling are welcome.
