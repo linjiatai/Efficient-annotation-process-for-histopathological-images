@@ -27,7 +27,7 @@ palette[18:21] = [237,145,33] # 6-Muscle
 
 In this program, we show ehow to use this program on Ubuntu 20.04.
 
-- Step 1: Generate simplest single-category annotation by drawing polygons or rectangular with the corresponding color of palette, such as:
+- Step 1: Generate simplest single-category annotation of each area by drawing polygons or rectangular with the corresponding color of palette, such as:
 
 ![Figure1](figures/11.png)![Figure2](figures/22.png)![Figure3](figures/33.png)
 
