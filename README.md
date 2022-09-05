@@ -6,7 +6,7 @@ This program is a high-efficiency annotation process for histopathological image
 ## Preparation
 
 - You should download the pre-trained weight from [Baidu Netdisk](https://pan.baidu.com/s/1ZSjyrHIxSLqLt002XvI7gw?pwd=vlv7) (Code **vlv7**) and put it in **init_weights/**.
-- And you should prepare your region of interests (ROIs) and put them in the fold XXX.
+- And you should prepare your region of interests (ROIs) and put them in **ROIs/**.
 - Third, you should confirme the number of tissue types in your dataset and re-define your palette in **palette.py**, such as:
 ```
 palette = [0]*100             # Palette for CRC dataset
