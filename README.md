@@ -31,9 +31,12 @@ In this program, we show ehow to use this program on Ubuntu 20.04.
 
 ![Figure1](figures/11.png)![Figure2](figures/22.png)![Figure3](figures/33.png)
 
+- Step 2: Save the annotation into **label_v1_RGB/** fold.
+
 - Step 2: Execute the script file by:
 ```
 bash ./0_auto-loop.sh
 ```
+You need to manually modify the version **v1/v2/v3/...** for each loop.
 
-- Step 3: 
+- Step 3: Select well segmentated areas by drawing rectangular and delete the rest.
