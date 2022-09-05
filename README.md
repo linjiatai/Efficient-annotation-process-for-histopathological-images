@@ -53,5 +53,5 @@ The process for efficient labeling are still being iterated. Please contact us i
 ```
 Name:         Jiatai Lin
 Email:        linjiatai_cs@163.com
-Institution:  SCUT(South China University of Technology)
+Institution:  South China University of Technology (SCUT) & Guangdong Provincial Peoples Hospital (GDPH)
 ```
