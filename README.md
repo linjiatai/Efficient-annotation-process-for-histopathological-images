@@ -46,7 +46,7 @@ You need to manually modify the version **v1/v2/v3/...** in **0_auto-loop.sh** f
 
 ### Other tools
 
-We also provide some codes to segment WSI or generate tumor bulks.
+We also provide some tools to segment WSI or generate tumor bulks.
 
 ## 
 Any suggestions on efficient labeling are welcome.
