@@ -48,5 +48,9 @@ You need to manually modify the version **v1/v2/v3/...** in **0_auto-loop.sh** f
 
 We also provide some tools to segment WSI or generate tumor bulks.
 
-## 
-Any suggestions on efficient labeling are welcome.
+## Statement
+The process for efficient labeling are still being iterated. Please contact us if you have any suggestions.
+
+Jiatai Lin
+linjiatai_cs@163.com
+SCUT(South China University of Technology)
