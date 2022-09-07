@@ -13,6 +13,17 @@ import time
 from network.deeplab import *
 from tool import custom_transforms as tr
 from palette import palette
+
+def mask_filter(mask):
+    mask_np = np.asarray(mask).astype(np.uint8)
+
+    ## del small noise in region
+    for i in range(mask_np.max()):
+        dst = morphology.remove_small_objects(mask_np!=i+1,min_size=224*224*0.1,connectivity=1)
+        mask_np[dst==False]=i+1
+    
+    return mask_np
+
 class Normalize(object):
     """Normalize a tensor image with mean and standard deviation.
     Args:
@@ -123,6 +134,7 @@ class WSI_seg(object):
         img = Image.open(WSI_dir).convert('RGB')
         pred = self.gain_network_output(img)
         pred = np.argmax(pred,0)
+        pred = mask_filter(pred)
         visualimg = Image.fromarray(pred.astype(np.uint8), "P")
         visualimg.putpalette(self.palette)
         mask = visualimg
