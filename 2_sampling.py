@@ -1,6 +1,5 @@
 import os
 import shutil
-from matplotlib.pyplot import annotate
 import numpy as np
 from PIL import Image
 from palette import palette
